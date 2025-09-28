@@ -20,10 +20,10 @@
                 class="absolute left-1/6 -bottom-200 -translate-x-1/2"
                 data-aos="flip-left"
             ></anim-card>
-            <tech-card
+            <game-card
                 class="absolute left-1/2 -bottom-300 -translate-x-1/2 translate-y-1/2"
                 data-aos="flip-right"
-            ></tech-card>
+            ></game-card>
         </div>
     </div>
 </template>
