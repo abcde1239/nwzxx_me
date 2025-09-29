@@ -1,8 +1,9 @@
 <template>
-    <div class="about-card w-120 min-h-50 bg-white">
-        <div class="mb-2 font-baloo font-size-10 pl-2">
-            About me?
-            <div class="shadow-lg flex flex-col rounded bg-gray-50">
+    <div class="about-card w-120 min-h-50">
+        <div class="mb-1 font-baloo font-size-10 pl-2">
+            About Me?
+
+            <div class="pt-20 shadow-lg flex flex-col rounded bg-gray-50">
                 <!--头像区 -->
                 <div class="flex">
                     <img

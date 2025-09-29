@@ -1,45 +1,19 @@
 <template>
-    <div class="about-card w-120 min-h-50 bg-white">
-        <div class="mb-2 font-baloo font-size-10 pl-2">
-            About me?
-            <div class="shadow-lg flex flex-col rounded bg-gray-50">
-                <!--头像区 -->
-                <div class="flex">
-                    <img
-                        src="/public/img/abcde.jpg"
-                        alt="avatar"
-                        class="ml-5 rounded-full w-30 h-30"
-                    />
-                    <div class="flex flex-1 flex-col font-size-6 ml-20">
-                        <p class="m-0 text-gray-500">abcde...</p>
-                        <p class="m-0 text-gray-500">A Frontend Developer</p>
-                    </div>
-                </div>
-                <!-- 链接区 -->
-                <div class="flex ml-auto gap-1">
-                    <Icon
-                        icon="uil:github"
-                        class="cursor-pointer"
-                        size="14"
-                        @click="() => jumpTo('https://github.com/abcde1239')"
-                    />
-                    <Icon
-                        icon="material-symbols:book-2"
-                        class="cursor-pointer"
-                        size="14"
-                        @click="() => jumpTo('')"
-                    />
-                </div>
+    <div class="tech-card w-120 min-h-50 rounded-xl">
+        <div class="font-baloo font-size-10">
+            Technology Stack?
+
+            <div class="flex">
+                <img
+                    src="https://github-readme-stats.vercel.app/api/top-langs/?username=abcde1239&layout=compact"
+                    alt="stack"
+                    class="w-full"
+                />
             </div>
         </div>
     </div>
 </template>
 
-<script setup lang="ts">
-import { Icon } from '@iconify/vue';
-function jumpTo(url: string) {
-    window.location.href = url;
-}
-</script>
+<script setup lang="ts"></script>
 
 <style scoped></style>

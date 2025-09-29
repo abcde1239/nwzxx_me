@@ -9,13 +9,13 @@
 <script setup lang="ts">
 import Typed from 'typed.js';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-
+const { text } = defineProps<{ text: string }>();
 const typedEl = ref<HTMLElement | null>(null);
 let typed: Typed | null = null;
 onMounted(() => {
     if (typedEl.value) {
         typed = new Typed(typedEl.value, {
-            strings: ['Welcome to nwzxx.me!!🐬'],
+            strings: [text],
             typeSpeed: 50,
             showCursor: true,
             cursorChar: '|',

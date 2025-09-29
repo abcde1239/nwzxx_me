@@ -4,7 +4,7 @@
         <dragger-scale
             class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
         >
-            <title-text></title-text>
+            <prologue text="Welcome to nwzxx.me!!🐬"></prologue>
         </dragger-scale>
 
         <div class="cards-container flex flex-col reactive mt-100">
@@ -17,13 +17,18 @@
                 data-aos="flip-right"
             ></tech-card>
             <anim-card
-                class="absolute left-1/6 -bottom-200 -translate-x-1/2"
+                class="absolute left-1/6 -bottom-250 -translate-x-1/2"
                 data-aos="flip-left"
             ></anim-card>
             <game-card
-                class="absolute left-1/2 -bottom-300 -translate-x-1/2 translate-y-1/2"
+                class="absolute left-1/2 -bottom-400 -translate-x-1/2 translate-y-1/2"
                 data-aos="flip-right"
             ></game-card>
+            <section
+                class="min-h-screen flex items-center justify-center absolute -bottom-650 left-1/2 -translate-x-1/2"
+            >
+                <prologue text="It's over?"></prologue>
+            </section>
         </div>
     </div>
 </template>
@@ -32,12 +37,12 @@
 import 'aos/dist/aos.css';
 import AOS from 'aos';
 import { tsParticlesOptions } from '@/utils/tsparticles';
-import TitleText from '@/components/TitleText.vue';
+import prologue from '@/components/Prologue.vue';
 import DraggerScale from '@/components/DraggerScale.vue';
 import AboutCard from '@/components/Profiles/AboutCard.vue';
 import TechCard from '@/components/Profiles/TechCard.vue';
-import AnimCard from '@/components/Profiles/AnimCard.vue';
-import GameCard from '@/components/Profiles/GameCard.vue';
+import AnimCard from '@/components/Profiles/GameCard.vue';
+import GameCard from '@/components/Profiles/AnimCard.vue';
 import { onMounted } from 'vue';
 
 const options = tsParticlesOptions;
