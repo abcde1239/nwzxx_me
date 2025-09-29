@@ -21,14 +21,21 @@ jobs:
                   username: ${{ secrets.SERVER_USER}}
                   key: ${{ secrets.DEPLOY_KEY}}
                   script: |
-                      cd /home/${{ secrets.SERVER_USER }}/nwzxx-me || mkdir -p /home/${{ secrets.SERVER_USER }}/nwzxx-me
+                      #  创建目录
+                      mkdir -p /home/${{ secrets.SERVER_USER }}/nwzxx-me
                       cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
                       # 拉取最新代码
-                      git pull origin main || git clone git@github.com:<你的用户名>/<仓库名>.git .
+                      if [ -d .git ]; then
+                        git reset --hard
+                        git pull origin master
+                      else
+                        git clone -b master git@github.com:yourusername/yourrepo.git .
+                      fi
+
                       # 构建 Docker 镜像
-                      docker build -t nwzxx-me:latest .
+                      docker build -t nwzxx-me .
                       # 停掉旧容器
-                      docker stop nwzxx-me || true
-                      docker rm nwzxx-me || true
+                      docker stop nwzxx-me-container || true
+                      docker rm nwzxx-me-container || true
                       # 启动新容器
-                      docker run -d --nwzxx-me-container nwzxx-me -p 3000:80 nwzxx-me:latest
+                      docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me
