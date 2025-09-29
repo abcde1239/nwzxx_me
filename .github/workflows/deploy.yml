@@ -1,4 +1,4 @@
-name: Vue CI/CD with Docker
+name: nwzxx-me CI/CD with Docker
 
 on:
   push:
@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/nwzxx-me
+      IMAGE_NAME: nwzxx-me
       IMAGE_TAG: latest
+      CONTAINER_NAME: nwzxx-me-container
 
     steps:
       # 1. Checkout 代码
@@ -32,22 +33,25 @@ jobs:
       - name: Build Vue app
         run: npm run build
 
-      # 4. 登录 GHCR
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
-
-      # 5. 构建 Docker 镜像
+      # 4. 构建 Docker 镜像
       - name: Build Docker image
         run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
-      # 6. 推送 Docker 镜像
-      - name: Push Docker image
-        run: docker push $IMAGE_NAME:$IMAGE_TAG
+      # 5. 保存 Docker 镜像为 tar 文件
+      - name: Save Docker image
+        run: docker save $IMAGE_NAME:$IMAGE_TAG -o $IMAGE_NAME.tar
 
-      # 7. 部署到服务器
+      # 6. 上传 Docker 镜像到服务器
+      - name: Copy Docker image to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: $IMAGE_NAME.tar
+          target: ~/$IMAGE_NAME.tar
+
+      # 7. 在服务器上加载并运行 Docker 镜像
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -55,7 +59,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            docker pull $IMAGE_NAME:$IMAGE_TAG
-            docker stop nwzxx-me-container || true
-            docker rm nwzxx-me-container || true
-            docker run -d --name nwzxx-me-container -p 3000:80 $IMAGE_NAME:$IMAGE_TAG
+            docker load -i ~/$IMAGE_NAME.tar
+            docker stop $CONTAINER_NAME || true
+            docker rm $CONTAINER_NAME || true
+            docker run -d --name $CONTAINER_NAME -p 3000:80 $IMAGE_NAME:$IMAGE_TAG
