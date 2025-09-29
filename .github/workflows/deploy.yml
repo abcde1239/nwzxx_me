@@ -23,27 +23,20 @@ jobs:
           echo "📦 打包为 tar.gz..."
           docker save nginx:stable-alpine | gzip > ./nginx-stable-alpine.tar.gz
 
-      # 3. 上传项目文件到服务器
-      - name: Upload project files to server
-        uses: appleboy/scp-action@v0.1.7
+      # 3. 使用 rsync 上传项目 + 镜像到服务器
+      - name: Upload project and Docker image via rsync
+        uses: appleboy/rsync-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "./*"
+          source: "./"
           target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
+          compress: true
+          recursive: true
+          rm: false
 
-      # 4. 上传镜像 tar 包到服务器
-      - name: Upload Docker image tar to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          source: "./nginx-stable-alpine.tar.gz"
-          target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
-
-      # 5. SSH 到服务器执行部署
+      # 4. SSH 到服务器执行部署
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
