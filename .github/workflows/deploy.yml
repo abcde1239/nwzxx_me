@@ -3,17 +3,29 @@ name: CI/CD Docker Deploy
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - master # push 到 master 分支自动触发
+  workflow_dispatch: # 也支持手动触发
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. 拉取代码
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2. 上传代码到服务器
+      - name: Upload project to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "./"
+          target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
+
+      # 3. SSH 到服务器执行部署
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -21,11 +33,16 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            mkdir -p /home/${{ secrets.SERVER_USER }}/nwzxx-me
-            rsync -avz --delete $GITHUB_WORKSPACE/ /home/${{ secrets.SERVER_USER }}/nwzxx-me/
             cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
 
+            echo "🛠️ 构建 Docker 镜像..."
             docker build -t nwzxx-me .
+
+            echo "🛑 停掉旧容器..."
             docker stop nwzxx-me-container || true
             docker rm nwzxx-me-container || true
+
+            echo "🚀 启动新容器..."
             docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me
+
+            echo "✅ 部署完成！"
