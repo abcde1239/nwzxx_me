@@ -17,8 +17,13 @@ onMounted(() => {
         typed = new Typed(typedEl.value, {
             strings: [text],
             typeSpeed: 50,
-            showCursor: true,
+            backSpeed: 50,
+            autoInsertCss: true,
             cursorChar: '|',
+            showCursor: true,
+            backDelay: 500,
+            startDelay: 500,
+            loop: true,
         });
     }
 });
