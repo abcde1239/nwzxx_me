@@ -1,41 +1,42 @@
 name: CI/CD Docker Deploy
 
 on:
-    push:
-        branches:
-            - master #监听master分支
+  push:
+    branches:
+      - master #监听master分支
+  workflow_dispatch: # 手动触发
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            # 1. 拉取代码
-            - name: Checkout repository
-              uses: actions/checkout@v3
+    steps:
+      # 1. 拉取代码
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-            # 2. 使用 SSH 连接到服务器并执行部署命令
-            - name: Deploy to server
-              uses: appleboy/ssh-action@v0.1.7
-              with:
-                  host: ${{ secrets.SERVER_HOST}}
-                  username: ${{ secrets.SERVER_USER}}
-                  key: ${{ secrets.DEPLOY_KEY}}
-                  script: |
-                      #  创建目录
-                      mkdir -p /home/${{ secrets.SERVER_USER }}/nwzxx-me
-                      cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
-                      # 拉取最新代码
-                      if [ -d .git ]; then
-                        git reset --hard
-                        git pull origin master
-                      else
-                        git clone -b master git@github.com:abcde1239/nwzxx_me.git .
-                      fi
+      # 2. 使用 SSH 连接到服务器并执行部署命令
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST}}
+          username: ${{ secrets.SERVER_USER}}
+          key: ${{ secrets.DEPLOY_KEY}}
+          script: |
+            #  创建目录
+            mkdir -p /home/${{ secrets.SERVER_USER }}/nwzxx-me
+            cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
+            # 拉取最新代码
+            if [ -d .git ]; then
+              git reset --hard
+              git pull origin master
+            else
+              git clone -b master git@github.com:abcde1239/nwzxx_me.git .
+            fi
 
-                      # 构建 Docker 镜像
-                      docker build -t nwzxx-me .
-                      # 停掉旧容器
-                      docker stop nwzxx-me-container || true
-                      docker rm nwzxx-me-container || true
-                      # 启动新容器
-                      docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me
+            # 构建 Docker 镜像
+            docker build -t nwzxx-me .
+            # 停掉旧容器
+            docker stop nwzxx-me-container || true
+            docker rm nwzxx-me-container || true
+            # 启动新容器
+            docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me
