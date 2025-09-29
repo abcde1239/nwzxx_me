@@ -1,65 +1,79 @@
-name: nwzxx-me CI/CD with Docker
+name: CI/CD Docker Deploy
 
 on:
   push:
     branches:
-      - master # 仅在 master 分支 push 时触发
-  workflow_dispatch: # 允许手动触发
+      - master
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
-    env:
-      IMAGE_NAME: nwzxx-me
-      IMAGE_TAG: latest
-      CONTAINER_NAME: nwzxx-me-container
-
     steps:
-      # 1. Checkout 代码
-      - name: Checkout code
+      # 1️⃣ 拉取仓库代码
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. 设置 Node.js
+      # 2️⃣ 安装 Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: 20
 
-      # 3. 安装依赖 & 构建 Vue
+      # 3️⃣ 安装项目依赖，包括 @types/aos
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install --save-dev @types/aos
 
-      - name: Build Vue app
-        run: npm run build
+      # 4️⃣ 构建前端项目
+      - name: Build project
+        run: |
+          npm run build
 
-      # 4. 构建 Docker 镜像
-      - name: Build Docker image
-        run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
+      # 5️⃣ 打包 Docker 镜像到 tar 文件
+      - name: Save Docker base image
+        run: |
+          docker pull nginx:stable-alpine
+          docker save nginx:stable-alpine | gzip > nginx-stable-alpine.tar.gz
 
-      # 5. 保存 Docker 镜像为 tar 文件
-      - name: Save Docker image
-        run: docker save $IMAGE_NAME:$IMAGE_TAG -o $IMAGE_NAME.tar
-
-      # 6. 上传 Docker 镜像到服务器
-      - name: Copy Docker image to server
-        uses: appleboy/scp-action@v0.1.4
+      # 6️⃣ 上传项目与 Docker 镜像到服务器
+      - name: Upload project and Docker image
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          source: $IMAGE_NAME.tar
-          target: ~/$IMAGE_NAME.tar
+          source: |
+            ./dist
+            ./Dockerfile
+            ./nginx-stable-alpine.tar.gz
+          target: /home/${{ secrets.SERVER_USER }}/nwzxx-me
 
-      # 7. 在服务器上加载并运行 Docker 镜像
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v0.1.6
+      # 7️⃣ SSH 到服务器执行部署
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            docker load -i ~/$IMAGE_NAME.tar
-            docker stop $CONTAINER_NAME || true
-            docker rm $CONTAINER_NAME || true
-            docker run -d --name $CONTAINER_NAME -p 3000:80 $IMAGE_NAME:$IMAGE_TAG
+            cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
+
+            # 如果 nginx 镜像不存在，加载本地 tar 包
+            if ! docker images | grep -q "nginx.*stable-alpine"; then
+              docker load < nginx-stable-alpine.tar.gz
+            fi
+
+            # 构建 Docker 镜像
+            docker build -t nwzxx-me .
+
+            # 停掉旧容器
+            docker stop nwzxx-me-container || true
+            docker rm nwzxx-me-container || true
+
+            # 启动新容器
+            docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me
+
+            echo "✅ 部署完成！"
