@@ -3,7 +3,7 @@ name: CI/CD Docker Deploy
 on:
     push:
         branches:
-            - main #监听main分支
+            - master #监听master分支
 jobs:
     deploy:
         runs-on: ubuntu-latest
