@@ -23,13 +23,27 @@ jobs:
           echo "📦 打包为 tar.gz..."
           docker save nginx:stable-alpine | gzip > ./nginx-stable-alpine.tar.gz
 
-      # 3. 使用 rsync 上传项目 + 镜像到服务器
-      - name: Upload project and Docker image via rsync
-        run: |
-          mkdir -p /tmp/deploy
-          rsync -avz -e "ssh -i ${{ secrets.DEPLOY_KEY }} -o StrictHostKeyChecking=no" ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/nwzxx-me
+      # 3. 上传项目代码（不包含 tar 文件）
+      - name: Upload project code via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "./!(nginx-stable-alpine.tar.gz)"
+          target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
 
-      # 4. SSH 到服务器执行部署
+      # 4. 上传 Docker 镜像 tar 文件
+      - name: Upload Docker image tar via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "nginx-stable-alpine.tar.gz"
+          target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
+
+      # 5. SSH 到服务器执行部署
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -43,9 +57,9 @@ jobs:
             if ! docker images | grep -q "nginx.*stable-alpine"; then
               echo "⚠️ 未找到 nginx:stable-alpine，加载本地 tar 包..."
               docker load < nginx-stable-alpine.tar.gz
-              echo "✅ 已加载 nginx:stable-alpine"
+              echo "✅ 已加载 nginx-stable-alpine"
             else
-              echo "✅ nginx:stable-alpine 已存在"
+              echo "✅ nginx-stable-alpine 已存在"
             fi
 
             echo "🛠️ 构建 Docker 镜像..."
