@@ -3,51 +3,52 @@ name: Vue CI/CD with Docker
 on:
   push:
     branches:
-      - main
+      - master # 仅在 master 分支 push 时触发
+  workflow_dispatch: # 允许手动触发
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: your-docker-username/your-vue-app
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/nwzxx-me
       IMAGE_TAG: latest
 
     steps:
-      # 1. Checkout code
+      # 1. Checkout 代码
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Set up Node.js
+      # 2. 设置 Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
-      # 3. Install dependencies and build Vue app
+      # 3. 安装依赖 & 构建 Vue
       - name: Install dependencies
         run: npm ci
 
       - name: Build Vue app
         run: npm run build
 
-      # 4. Log in to GitHub Container Registry (or Docker Hub)
+      # 4. 登录 GHCR
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
 
-      # 5. Build Docker image
+      # 5. 构建 Docker 镜像
       - name: Build Docker image
         run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
-      # 6. Push Docker image
+      # 6. 推送 Docker 镜像
       - name: Push Docker image
         run: docker push $IMAGE_NAME:$IMAGE_TAG
 
-      # 7. Deploy to server via SSH
-      - name: Deploy to server
+      # 7. 部署到服务器
+      - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -55,6 +56,6 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             docker pull $IMAGE_NAME:$IMAGE_TAG
-            docker stop vue-app || true
-            docker rm vue-app || true
-            docker run -d --name vue-app -p 80:80 $IMAGE_NAME:$IMAGE_TAG
+            docker stop nwzxx-me-container || true
+            docker rm nwzxx-me-container || true
+            docker run -d --name nwzxx-me-container -p 3000:80 $IMAGE_NAME:$IMAGE_TAG
