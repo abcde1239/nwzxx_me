@@ -1,81 +1,60 @@
-name: CI/CD Docker Deploy
+name: Vue CI/CD with Docker
 
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_NAME: your-docker-username/your-vue-app
+      IMAGE_TAG: latest
+
     steps:
-      # 1. 拉取代码
-      - name: Checkout repository
+      # 1. Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. 打包项目和 Docker 镜像（排除 .git 和 workflow 文件，避免 tar 报错）
-      - name: Prepare project and Docker image
-        run: |
-          echo "📦 打包项目..."
-          tar czf project.tar.gz --exclude=".git" --exclude=".github" --exclude="*.tar.gz" .
-
-          echo "🐳 拉取 nginx:stable-alpine..."
-          docker pull nginx:stable-alpine
-
-          echo "📦 打包 nginx 镜像..."
-          docker save nginx:stable-alpine | gzip > nginx-stable-alpine.tar.gz
-
-      # 3. 上传项目 tar
-      - name: Upload project tar via SCP
-        uses: appleboy/scp-action@v0.1.7
+      # 2. Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          source: "project.tar.gz"
-          target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
+          node-version: '18'
 
-      # 4. 上传 Docker 镜像 tar
-      - name: Upload Docker image tar via SCP
-        uses: appleboy/scp-action@v0.1.7
+      # 3. Install dependencies and build Vue app
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vue app
+        run: npm run build
+
+      # 4. Log in to GitHub Container Registry (or Docker Hub)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          source: "nginx-stable-alpine.tar.gz"
-          target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 5. SSH 到服务器解压、加载镜像并部署
+      # 5. Build Docker image
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+      # 6. Push Docker image
+      - name: Push Docker image
+        run: docker push $IMAGE_NAME:$IMAGE_TAG
+
+      # 7. Deploy to server via SSH
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
-
-            echo "📂 解压项目..."
-            tar xzf project.tar.gz
-            rm project.tar.gz
-
-            echo "🔍 检查 nginx:stable-alpine 镜像..."
-            if ! docker images | grep -q "nginx.*stable-alpine"; then
-              echo "⚠️ 未找到 nginx 镜像，加载 tar..."
-              docker load < nginx-stable-alpine.tar.gz
-            fi
-            rm nginx-stable-alpine.tar.gz
-
-            echo "🛠️ 构建 Docker 镜像..."
-            docker build -t nwzxx-me .
-
-            echo "🛑 停掉旧容器..."
-            docker stop nwzxx-me-container || true
-            docker rm nwzxx-me-container || true
-
-            echo "🚀 启动新容器..."
-            docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me
-
-            echo "✅ 部署完成！"
+            docker pull $IMAGE_NAME:$IMAGE_TAG
+            docker stop vue-app || true
+            docker rm vue-app || true
+            docker run -d --name vue-app -p 80:80 $IMAGE_NAME:$IMAGE_TAG
