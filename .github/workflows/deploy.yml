@@ -15,17 +15,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. 上传代码到服务器
-      - name: Upload project to server
+      # 2. 拉取基础镜像并打包
+      - name: Prepare base image
+        run: |
+          echo "🐳 拉取 nginx:stable-alpine..."
+          docker pull nginx:stable-alpine
+          echo "📦 打包为 tar.gz..."
+          docker save nginx:stable-alpine | gzip > nginx-stable-alpine.tar.gz
+
+      # 3. 上传代码 + 基础镜像到服务器
+      - name: Upload project and base image to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "./"
+          source: "./ ./nginx-stable-alpine.tar.gz"
           target: "/home/${{ secrets.SERVER_USER }}/nwzxx-me"
 
-      # 3. SSH 到服务器执行部署
+      # 4. SSH 到服务器执行部署
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -34,6 +42,15 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
+
+            echo "🔍 检查 nginx:stable-alpine 镜像是否存在..."
+            if ! docker images | grep -q "nginx.*stable-alpine"; then
+              echo "⚠️ 未找到 nginx:stable-alpine，加载本地 tar 包..."
+              docker load < nginx-stable-alpine.tar.gz
+              echo "✅ 已加载 nginx:stable-alpine"
+            else
+              echo "✅ nginx:stable-alpine 已存在"
+            fi
 
             echo "🛠️ 构建 Docker 镜像..."
             docker build -t nwzxx-me .

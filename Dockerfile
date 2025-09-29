@@ -1,5 +1,4 @@
-FROM registry.cn-hangzhou.aliyuncs.com/library/nginx:stable-alpine
-
+FROM nginx:stable-alpine
 
 # 删除默认配置
 RUN rm /etc/nginx/conf.d/default.conf
