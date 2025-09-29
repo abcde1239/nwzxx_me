@@ -6,11 +6,7 @@
             <div class="pt-20 shadow-lg flex flex-col rounded bg-gray-50">
                 <!--头像区 -->
                 <div class="flex">
-                    <img
-                        src="/public/img/abcde.jpg"
-                        alt="avatar"
-                        class="ml-5 rounded-full w-30 h-30"
-                    />
+                    <img src="/img/abcde.jpg" alt="avatar" class="ml-5 rounded-full w-30 h-30" />
                     <div class="flex flex-1 flex-col font-size-6 ml-20">
                         <p class="m-0 text-gray-500">abcde...</p>
                         <p class="m-0 text-gray-500">A Frontend Developer</p>

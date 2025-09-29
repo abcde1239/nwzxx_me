@@ -1,0 +1,34 @@
+name: CI/CD Docker Deploy
+
+on:
+    push:
+        branches:
+            - main #监听main分支
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. 拉取代码
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            # 2. 使用 SSH 连接到服务器并执行部署命令
+            - name: Deploy to server
+              uses: appleboy/ssh-action@v0.1.7
+              with:
+                  host: ${{ secrets.SERVER_HOST}}
+                  username: ${{ secrets.SERVER_USER}}
+                  key: ${{ secrets.DEPLOY_KEY}}
+                  script: |
+                      cd /home/${{ secrets.SERVER_USER }}/nwzxx-me || mkdir -p /home/${{ secrets.SERVER_USER }}/nwzxx-me
+                      cd /home/${{ secrets.SERVER_USER }}/nwzxx-me
+                      # 拉取最新代码
+                      git pull origin main || git clone git@github.com:<你的用户名>/<仓库名>.git .
+                      # 构建 Docker 镜像
+                      docker build -t nwzxx-me:latest .
+                      # 停掉旧容器
+                      docker stop nwzxx-me || true
+                      docker rm nwzxx-me || true
+                      # 启动新容器
+                      docker run -d --nwzxx-me-container nwzxx-me -p 3000:80 nwzxx-me:latest

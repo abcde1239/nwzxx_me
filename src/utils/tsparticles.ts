@@ -1,7 +1,7 @@
 export const tsParticlesOptions = {
     background: {
         color: '#1a0b2e',
-        image: "url('/public/img/jill-and-boss.jpg')",
+        image: "url('/img/jill-and-boss.jpg')",
         position: 'center',
         repeat: 'no-repeat',
         size: 'cover',

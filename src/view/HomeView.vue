@@ -27,7 +27,7 @@
             <section
                 class="min-h-screen flex items-center justify-center absolute -bottom-650 left-1/2 -translate-x-1/2"
             >
-                <prologue text="It's over?"></prologue>
+                <prologue text="It's over....?"></prologue>
             </section>
         </div>
     </div>

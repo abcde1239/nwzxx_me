@@ -12,7 +12,7 @@
                         leave-active-class="transition-all duration-200 ease-in-out opacity-0"
                     >
                         <img
-                            :src="`/public/img/anim/${currentAnim?.key}.background.jpg`"
+                            :src="`/img/anim/${currentAnim?.key}.background.jpg`"
                             alt="anim-bg"
                             class="flex w-110"
                         />
@@ -26,7 +26,7 @@
                         @click="handleShownGameUpdate(anim.key)"
                     >
                         <img
-                            :src="`/public/img/anim/${anim.key}.jpg`"
+                            :src="`/img/anim/${anim.key}.jpg`"
                             alt="icon"
                             class="m-1 p-2 w-20 rounded-xl shadow-lg hover-scale-105 cursor-pointer"
                         />
@@ -47,13 +47,13 @@ import { computed, ref } from 'vue';
 
 const animList = [
     {
-        key: 'Denpa-onna-to-seishun-otoko',
+        key: 'denpa-onna-to-seishun-otoko',
         name: 'Denpa Onna to Seishun Otoko',
         desc: 'Commemorating my dear moment',
     },
-    { key: 'Grand-blue', name: 'Grand Blue', desc: 'Just diving...' },
+    { key: 'grand-blue', name: 'Grand Blue', desc: 'Just diving...' },
 ];
-const currentAnimKey = ref('Denpa-onna-to-seishun-otoko');
+const currentAnimKey = ref('denpa-onna-to-seishun-otoko');
 const currentAnim = computed(() =>
     animList.find((anim) => {
         if (anim.key === currentAnimKey.value) return anim;

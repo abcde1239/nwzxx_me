@@ -12,7 +12,7 @@
                         leave-active-class="transition-all duration-200 ease-in-out opacity-0"
                     >
                         <img
-                            :src="`/public/img/game/${currentGame?.key}.background.jpg`"
+                            :src="`/img/game/${currentGame?.key}.background.jpg`"
                             alt="game-bg"
                             class="flex w-110"
                         />
@@ -26,7 +26,7 @@
                         @click="handleShownGameUpdate(game.key)"
                     >
                         <img
-                            :src="`/public/img/game/${game.key}.jpg`"
+                            :src="`/img/game/${game.key}.jpg`"
                             alt="icon"
                             class="m-1 p-2 w-20 rounded-xl shadow-lg hover-scale-105 cursor-pointer"
                         />
@@ -46,10 +46,10 @@
 import { computed, ref } from 'vue';
 
 const gameList = [
-    { name: 'VA-11 Hall-A', key: 'Vallhalla', desc: 'My favorite game' },
-    { name: 'Terraria', key: 'Terraria', desc: " My longest-play-time's game" },
+    { name: 'VA-11 Hall-A', key: 'vallhalla', desc: 'My favorite game' },
+    { name: 'Terraria', key: 'terraria', desc: " My longest-play-time's game" },
 ];
-const currentGameKey = ref('Vallhalla');
+const currentGameKey = ref('vallhalla');
 const currentGame = computed(() =>
     gameList.find((game) => {
         if (game.key === currentGameKey.value) return game;
