@@ -15,13 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. 打包项目和 Docker 镜像
+      # 2. 打包项目和 Docker 镜像（排除 .git 和 workflow 文件，避免 tar 报错）
       - name: Prepare project and Docker image
         run: |
           echo "📦 打包项目..."
-          tar czf project.tar.gz .  # 打包所有文件，包括隐藏文件
+          tar czf project.tar.gz --exclude=".git" --exclude=".github" --exclude="*.tar.gz" .
+
           echo "🐳 拉取 nginx:stable-alpine..."
           docker pull nginx:stable-alpine
+
           echo "📦 打包 nginx 镜像..."
           docker save nginx:stable-alpine | gzip > nginx-stable-alpine.tar.gz
 
