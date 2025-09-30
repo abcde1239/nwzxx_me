@@ -1,8 +1,11 @@
 <template>
     <div class="game-card w-120 min-h-50">
         <div class="mb-1 font-baloo font-size-10">
-            Game?
-
+            <div
+                class="font-baloo text-5xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 select-none"
+            >
+                Game?
+            </div>
             <!-- 图片区 -->
             <div class="shadow-lg flex flex-col rounded bg-gray-50 pt-5">
                 <div class="flex justify-center">

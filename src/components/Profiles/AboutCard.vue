@@ -1,7 +1,11 @@
 <template>
     <div class="about-card w-120 min-h-50">
         <div class="mb-1 font-baloo font-size-10 pl-2">
-            About Me?
+            <div
+                class="font-baloo text-5xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 select-none"
+            >
+                About Me?
+            </div>
 
             <div class="pt-20 shadow-lg flex flex-col rounded bg-gray-50">
                 <!--头像区 -->
