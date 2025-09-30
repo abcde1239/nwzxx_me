@@ -44,9 +44,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "./nwzxx-me.tar"
-          target: "/home/${{ secrets.SERVER_USER }}/"
-          debug: true
+          source: "nwzxx-me.tar"
+          target: "~/"
 
       # 7. SSH 登录服务器，加载镜像并运行容器
       - name: Deploy on server
