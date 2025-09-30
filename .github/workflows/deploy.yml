@@ -23,7 +23,7 @@ jobs:
 
       # 3. 安装依赖并构建 Vue 项目
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         run: npm run build
