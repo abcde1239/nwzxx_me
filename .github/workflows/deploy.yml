@@ -39,6 +39,7 @@ jobs:
           chmod 644 nwzxx-me.tar
 
       # 6. 上传镜像文件到服务器（开启覆盖）
+    
       - name: Upload image to server
         uses: appleboy/scp-action@v0.1.7
         with:
