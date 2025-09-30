@@ -33,7 +33,9 @@ jobs:
 
       # 5. 保存镜像为 tar 文件
       - name: Save Docker image
-        run: docker save -o nwzxx-me.tar nwzxx-me:latest
+        run: |
+          docker save -o nwzxx-me.tar nwzxx-me:latest
+          chmod 644 nwzxx-me.tar
 
       # 6. 上传镜像文件到服务器
       - name: Upload image to server
