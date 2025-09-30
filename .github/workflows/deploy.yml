@@ -23,7 +23,7 @@ jobs:
 
       # 3. 安装依赖并构建 Vue 项目
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project
         run: npm run build
@@ -38,8 +38,7 @@ jobs:
           docker save -o nwzxx-me.tar nwzxx-me:latest
           chmod 644 nwzxx-me.tar
 
-
-      # 6. 上传镜像文件到服务器
+      # 6. 上传镜像文件到服务器（开启覆盖）
       - name: Upload image to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -47,12 +46,13 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           source: "./nwzxx-me.tar"
-          target: "/home/${{ secrets.SERVER_USER }}/" # ⚠️ 改为绝对路径
+          target: "/home/${{ secrets.SERVER_USER }}/" # 绝对路径
+          overwrite: true # ⚡ 开启覆盖
           timeout: 600s
           command_timeout: 600s
           debug: true
 
-      # 7. SSH 登录服务器，加载镜像并运行容器
+      # 7. SSH 登录服务器，清理旧文件并加载镜像运行容器
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -60,8 +60,14 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            docker load -i /home/${{ secrets.SERVER_USER }}/nwzxx-me.tar
+            # ⚡ 清理旧文件和容器
+            rm -rf /home/${{ secrets.SERVER_USER }}/nwzxx-me*
             docker stop nwzxx-me-container || true
             docker rm nwzxx-me-container || true
+
+            # 加载新镜像并启动容器
+            docker load -i /home/${{ secrets.SERVER_USER }}/nwzxx-me.tar
             docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me:latest
+
+            # 删除 tar 文件，节省空间
             rm -f /home/${{ secrets.SERVER_USER }}/nwzxx-me.tar
