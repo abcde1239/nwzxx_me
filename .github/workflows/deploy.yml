@@ -23,7 +23,7 @@ jobs:
 
       # 3. 安装依赖并构建 Vue 项目
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         run: npm run build
@@ -37,7 +37,7 @@ jobs:
         run: |
           docker save -o nwzxx-me.tar nwzxx-me:latest
           chmod 644 nwzxx-me.tar
-          
+
 
       # 6. 上传镜像文件到服务器
       - name: Upload image to server
