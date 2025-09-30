@@ -1,9 +1,9 @@
-name: Deploy  nwzxx-me
+name: Deploy nwzxx-me
 
 on:
   push:
     branches:
-      - master # 改成你的主分支
+      - master
 
 jobs:
   build-and-deploy:
@@ -14,15 +14,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. 构建 Docker 镜像
+      # 2. 安装 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # 3. 安装依赖并构建 Vue 项目
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      # 4. 构建 Docker 镜像（会用到 dist/）
       - name: Build Docker image
         run: docker build -t nwzxx-me:latest .
 
-      # 3. 保存镜像为 tar 文件
+      # 5. 保存镜像为 tar 文件
       - name: Save Docker image
         run: docker save -o nwzxx-me.tar nwzxx-me:latest
 
-      # 4. 上传镜像文件到服务器
+      # 6. 上传镜像文件到服务器
       - name: Upload image to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -32,7 +45,7 @@ jobs:
           source: "nwzxx-me.tar"
           target: "~/"
 
-      # 5. SSH 登录服务器，加载镜像并运行容器
+      # 7. SSH 登录服务器，加载镜像并运行容器
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -40,15 +53,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            # 加载新的镜像
             docker load -i ~/nwzxx-me.tar
-
-            # 停止并删除旧容器
             docker stop nwzxx-me-container || true
             docker rm nwzxx-me-container || true
-
-            # 启动新容器
-            docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me:latest
-
-            # 删除 tar 文件，节省空间
+            docker run -d --name nwzxx-me-container -p 80:80 nwzxx-me:latest
             rm -f ~/nwzxx-me.tar
