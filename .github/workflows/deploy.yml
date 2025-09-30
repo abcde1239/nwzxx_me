@@ -38,17 +38,16 @@ jobs:
           docker save -o nwzxx-me.tar nwzxx-me:latest
           chmod 644 nwzxx-me.tar
 
-      # 6. 上传镜像文件到服务器（开启覆盖）
-    
+      # 6. 上传镜像文件到服务器（禁用内部 tar，开启覆盖）
       - name: Upload image to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "./nwzxx-me.tar"
-          target: "/home/${{ secrets.SERVER_USER }}/" # 绝对路径
-          overwrite: true # ⚡ 开启覆盖
+          source: "./nwzxx-me.tar" # 直接上传文件
+          target: "/home/${{ secrets.SERVER_USER }}/"
+          overwrite: true # 覆盖已有文件                   # 禁用内部 tar
           timeout: 600s
           command_timeout: 600s
           debug: true
@@ -70,5 +69,5 @@ jobs:
             docker load -i /home/${{ secrets.SERVER_USER }}/nwzxx-me.tar
             docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me:latest
 
-            # 删除 tar 文件，节省空间
+            # 删除 tar 文件节省空间
             rm -f /home/${{ secrets.SERVER_USER }}/nwzxx-me.tar
