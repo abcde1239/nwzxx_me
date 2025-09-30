@@ -61,7 +61,7 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             # ⚡ 清理旧文件和容器
-            rm -rf /home/${{ secrets.SERVER_USER }}/nwzxx-me*
+
             docker stop nwzxx-me-container || true
             docker rm nwzxx-me-container || true
 
@@ -70,4 +70,5 @@ jobs:
             docker run -d --name nwzxx-me-container -p 3000:80 nwzxx-me:latest
 
             # 删除 tar 文件节省空间
+            rm -rf /home/${{ secrets.SERVER_USER }}/nwzxx-me*
             rm -f /home/${{ secrets.SERVER_USER }}/nwzxx-me.tar
