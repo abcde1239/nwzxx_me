@@ -28,7 +28,7 @@
                         icon="material-symbols:book-2"
                         class="cursor-pointer"
                         size="14"
-                        @click="() => jumpTo('')"
+                        @click="() => jumpTo('http://39.103.58.142:8080')"
                     />
                 </div>
             </div>
